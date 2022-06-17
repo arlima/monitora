@@ -33,3 +33,7 @@ Como testar ?
 
 - Pare o programa endpoint.py de um dos hosts que estão sendo monitorados. Você deve receber uma mensagem no grupo de telegram configurado dizendo que ele está com problemas de comunicação.
 - Ative o programa endpoint.py do host novamente e você deve receber uma mensagem dizendo que ele voltou ao normal.
+
+Como executar os arquivos .py ?
+- Eu uso o supervisor para manter os .py rodando. Veja mais detalhes em https://www.digitalocean.com/community/tutorials/how-to-install-and-manage-supervisor-on-ubuntu-and-debian-vps
+
