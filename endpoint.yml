@@ -1,0 +1,10 @@
+#Endereço da API que vai receber o sinal do endpoint. Não esqueça do /signal no final e da porta :1234
+SERVER : "http://123.123.123.123:1234/signal"
+#Nome do endppoint
+HOST : host1
+#Usuário para autenticar na API remota
+USER : user
+#Senha para autenticar na API remota
+PWD  : password
+#Intervalo em segundos entre os envios de sinais
+INTERVAL : 60
