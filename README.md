@@ -13,7 +13,7 @@ Parte 1: Endpoint (endpoint.py e endpoint.yml)
 
 Parte 2: Servidor de API (monitora.py e monitora.yml)
 
-- Instalar no servidor remoto (AWS, Azure, etc)
+- Instalar no servidor remoto (AWS, Azure, etc). No meu caso, está instalado em um servidor lightsail da AWS com serviço de ip fixo e a porta 1234 aberta.
 - O arquivo monitora.py deve ser instalado na pasta monitora no /home do usuário que vai rodar o programa. Este programa sobe um servidor na porta 1234 que recebe informações dos diversos endpoints.
 - O arquivo monitora.yml deve ser instalado no /etc/monitora/ do servidor remoto. Nele existem várias configurações importantes que precisam ser ajustadas.
 - Rodar o arquivo monitora.py
