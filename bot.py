@@ -1,44 +1,49 @@
-import requests
-import time
-import datetime
+import telebot
 import yaml
+import psutil
+    
+config_file = open("/etc/monitora/checker.yml", 'r')
+config = yaml.safe_load(config_file)
+bot = telebot.TeleBot(config["TOKEN"])
 
-def telegram_message(token, chatid, message):
-    response = requests.get("https://api.telegram.org/bot"+token+"/sendMessage?chat_id="+chatid+"&text="+message)
-    return response
+#https://thispointer.com/python-check-if-a-process-is-running-by-name-and-find-its-process-id-pid/
+def checkIfProcessRunning(processName):
+    '''
+    Check if there is any running process that contains the given name processName.
+    '''
+    #Iterate over the all the running process
+    for proc in psutil.process_iter():
+        try:
+            # Check if process name contains the given name string.
+            try:
+                proc_name = proc.cmdline()[1]
+            except IndexError:
+                proc_name = 'null'
+            if processName.lower() in proc_name.lower():
+                return True
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            pass
+    return False;
+
+@bot.message_handler(commands = ['start'])
+def start(message):
+    msg = "Hello !"
+    bot.reply_to(message, msg)
+
+@bot.message_handler(commands = ['status'])
+def status(message):
+    if checkIfProcessRunning("monitora/checker"):
+        msg = "Checker is running."
+    else:
+        msg = "PROBLEM: Checker is not running."
+    if checkIfProcessRunning("monitora/server"):
+        msg = msg + "\nServer is running."
+    else:
+        msg = msg + "\nPROBLEM: Server is not running."
+    bot.reply_to(message, msg)
 
 def main():
-    config_file = open("/etc/monitora/bot.yml", 'r')
-    config = yaml.safe_load(config_file)
+    bot.polling()
 
-    alertTime = {}
-
-    while True:
-        time.sleep(10)
-        now = datetime.datetime.now()
-        for host in config["HOSTS"]:
-            try:
-                with open(config["PATH"]+host+".host", 'r') as a_reader:
-                    ts = a_reader.read()
-                dt = datetime.datetime.fromtimestamp(int(ts))
-                interval = (now - dt).total_seconds()
-            except:
-                interval = 0
-            if interval >= config["INTERVAL_PROBLEM"]:
-                sendMessage = True
-                lastDt = alertTime.get(host, 0)
-                if lastDt != 0:
-                    intervalLastAlert = (now - lastDt).total_seconds()
-                    if intervalLastAlert < config["INTERVAL_RETRY_MESSAGE"]:
-                        sendMessage = False
-                if sendMessage:
-                    alertTime[host] = now
-                    telegram_message(config["TOKEN"], config["CHATID"], host + " não manda mensagens faz mais de {0} minutos. Possível problema de rede ou na máquina !".format(int(interval/60)))
-            else :
-                lastDt = alertTime.get(host, 0)
-                if lastDt != 0:
-                    alertTime[host] = 0
-                    telegram_message(config["TOKEN"], config["CHATID"], host + " normalizado.") 
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
