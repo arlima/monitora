@@ -1,11 +1,11 @@
-import requests
 import time
 import datetime
 import yaml
+import telebot
 
 def telegram_message(token, chatid, message):
-    response = requests.get("https://api.telegram.org/bot"+token+"/sendMessage?chat_id="+chatid+"&text="+message)
-    return response
+    bot = telebot.TeleBot(token)
+    bot.send_message(chatid, message)
 
 def main():
     config_file = open("/etc/monitora/checker.yml", 'r')
