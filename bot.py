@@ -1,6 +1,7 @@
 import telebot
 import yaml
 import psutil
+import datetime
     
 config_file = open("/etc/monitora/checker.yml", 'r')
 config = yaml.safe_load(config_file)
@@ -32,14 +33,32 @@ def start(message):
 
 @bot.message_handler(commands = ['status'])
 def status(message):
+    msg = "-------- PROCESSES -----------"
     if checkIfProcessRunning("monitora/checker"):
-        msg = "Checker is running."
+        msg = msg + "\nChecker process: Running."
     else:
-        msg = "PROBLEM: Checker is not running."
+        msg = msg + "\nPROBLEM: Checker process: Not running."
     if checkIfProcessRunning("monitora/server"):
-        msg = msg + "\nServer is running."
+        msg = msg + "\nServer process: Running."
     else:
-        msg = msg + "\nPROBLEM: Server is not running."
+        msg = msg + "\nPROBLEM: Server process: Not running."
+    
+    msg = msg + "\n-------- ENDPOINTS -----------"
+
+    now = datetime.datetime.now()
+    for host in config["HOSTS"]:
+        try:
+            with open(config["PATH"]+host+".host", 'r') as a_reader:
+                ts = a_reader.read()
+            dt = datetime.datetime.fromtimestamp(int(ts))
+            interval = (now - dt).total_seconds()
+        except:
+            interval = 'null'
+        if interval == 'null':
+            msg = msg + "\n" + host + " endpoint: never sent a signal."
+        else:
+            msg = msg + "\n" + host + " endpoint: sent a message {0} seconds ago.".format(int(interval))
+            
     bot.reply_to(message, msg)
 
 def main():
