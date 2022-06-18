@@ -15,7 +15,10 @@ auth = HTTPBasicAuth()
 def verify(username, password):
     if not (username and password):
         return False
-    return config["USER_DATA"].get(username) == password
+    if config["USER"] == username and config["PWD"] == password :
+        return True
+    else:
+        return False
 
 # --- classic api endpoint ---
 @app.route("/signal", methods = ['POST'])

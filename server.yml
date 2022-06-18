@@ -1,6 +1,5 @@
-# Usuário e senha da API para receber os sinais dos endpoints
-USER_DATA : 
-  user : password
 # Caminho onde serão armazenados os arquivos .host
 PATH : /home/usuario/monitora/
-
+# Usuário e senha da API para receber os sinais dos endpoints
+USER : user
+PWD  : password
