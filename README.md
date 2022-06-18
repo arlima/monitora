@@ -42,3 +42,5 @@ Como testar ?
 Como executar os arquivos .py ?
 - Eu uso o supervisor para manter os .py rodando. Veja mais detalhes em https://www.digitalocean.com/community/tutorials/how-to-install-and-manage-supervisor-on-ubuntu-and-debian-vps
 
+Como obter o TOKEN do telegram ou o ID do grupo para onde enviar as mensagens ?
+- Veja mais informações aqui: https://blog.gabrf.com/posts/HowToBot/
