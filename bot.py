@@ -59,7 +59,8 @@ def status(message):
         else:
             msg = msg + "\n" + host + " endpoint: sent a message {0} seconds ago.".format(int(interval))
             
-    bot.reply_to(message, msg)
+    #bot.reply_to(message, msg)
+    bot.send_message(message.chat.id, msg)
 
 def main():
     bot.polling()
