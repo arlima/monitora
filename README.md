@@ -25,9 +25,9 @@ Parte 3: Checker (checker.py e checker.yml)
 - O arquivo checker.yml deve ser instalado no /etc/monitora/ do servidor remoto. Nele existem várias configurações importantes que precisam ser ajustadas.
 - Rodar o arquivo checker.py e mantê-lo ativo.
 
-Parte 4: Bot (bot.py e bot.yml)
+Parte 4: Bot (bot.py)
 - Instalar no servidor mesmo servidor remoto que o servidor de API.
-- O arquivo bot.py deve ser instalado na pasta monitora no /home do usuário que vai rodar o programa. Este programa é um bot de telegram com o qual um usuário pode se comunicar. Se o usuário enviar o comando /status para ele, a resposta será o status do server e do checker.
+- O arquivo bot.py deve ser instalado na pasta monitora no /home do usuário que vai rodar o programa. Este programa é um bot de telegram com o qual um usuário pode se comunicar. Se o usuário enviar o comando /status para ele, a resposta será o status do server e do checker e quando foi a última vez que cada host mandou um sinal.
 - Rodar o arquivo bot.py e mantê-lo ativo.
 
 O que são os arquivos .host
