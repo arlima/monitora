@@ -1,45 +1,54 @@
+"""Checker is the module that reads the .hosts files and notify via telegram when the endpoints
+are not sending signals
+"""
+
 import time
 import datetime
 import yaml
 import telebot
 
 def main():
-    config_file = open("/etc/monitora/checker.yml", 'r')
+    """ main is the main function"""
+    config_file = open("/etc/monitora/checker.yml", 'r', encoding="utf8")
     config = yaml.safe_load(config_file)
     bot = telebot.TeleBot(config["TOKEN"])
-    alertTime = {}
+    alert_time = {}
 
     while True:
         time.sleep(10)
         now = datetime.datetime.now()
         for host in config["HOSTS"]:
             try:
-                with open(config["PATH"]+host+".host", 'r') as a_reader:
-                    ts = a_reader.read()
-                dt = datetime.datetime.fromtimestamp(int(ts))
-                interval = (now - dt).total_seconds()
-            except:
+                with open(config["PATH"]+host+".host", 'r', encoding="utf8") as a_reader:
+                    last_signal_ts = a_reader.read()
+                last_signal_dt = datetime.datetime.fromtimestamp(int(last_signal_ts))
+                interval = (now - last_signal_dt).total_seconds()
+            except FileNotFoundError:
                 interval = 0
-            
-            lastDt = alertTime.get(host, 0)
-            if lastDt != 0:
-                intervalLastAlert = (now - lastDt).total_seconds()
-            else:
-                intervalLastAlert = 0
 
-            if intervalLastAlert >= config["INTERVAL_RETRY_MESSAGE"]:
-                alertTime[host] = now
-                bot.send_message(config["CHATID"], "RETRY: {} não manda mensagens faz mais de {} minutos. Possível problema de rede ou na máquina !".format(host, int(interval/60)))
+            last_dt = alert_time.get(host, 0)
+            if last_dt != 0:
+                interval_last_alert = (now - last_dt).total_seconds()
+            else:
+                interval_last_alert = 0
+
+            if interval_last_alert >= config["INTERVAL_RETRY_MESSAGE"]:
+                alert_time[host] = now
+                msg = f"RETRY: {host} não manda mensagens faz mais de {int(interval/60)} minutos. "
+                msg = msg + "Possível problema de rede ou na máquina !"
+                bot.send_message(config["CHATID"], msg)
                 continue
-            
-            if interval >= config["INTERVAL_PROBLEM"] and lastDt == 0:
-                alertTime[host] = now
-                bot.send_message(config["CHATID"], "{} não manda mensagens faz mais de {} minutos. Possível problema de rede ou na máquina !".format(host, int(interval/60)))
+
+            if interval >= config["INTERVAL_PROBLEM"] and last_dt == 0:
+                alert_time[host] = now
+                msg = f"{host} não manda mensagens faz mais de {int(interval/60)} minutos. "
+                msg = msg + "Possível problema de rede ou na máquina !"
+                bot.send_message(config["CHATID"], msg)
                 continue
-              
-            if interval < config["INTERVAL_PROBLEM"] and lastDt != 0:
-                alertTime[host] = 0
-                bot.send_message(config["CHATID"], " {} normalizado.".format(host))
+
+            if interval < config["INTERVAL_PROBLEM"] and last_dt != 0:
+                alert_time[host] = 0
+                bot.send_message(config["CHATID"], f" {host} normalizado.")
                 continue
 
 if __name__ == "__main__":
