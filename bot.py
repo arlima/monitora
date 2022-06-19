@@ -28,39 +28,42 @@ def checkIfProcessRunning(processName):
 
 @bot.message_handler(commands = ['start'])
 def start(message):
-    msg = "Hello !"
-    bot.reply_to(message, msg)
+    if message.chat.id == config['CHATID']:
+        msg = "Hello !"
+        bot.reply_to(message, msg)
 
 @bot.message_handler(commands = ['status'])
 def status(message):
-    msg = "-------- PROCESSES -----------"
-    if checkIfProcessRunning("monitora/checker"):
-        msg = msg + "\nChecker process: Running."
-    else:
-        msg = msg + "\nPROBLEM: Checker process: Not running."
-    if checkIfProcessRunning("monitora/server"):
-        msg = msg + "\nServer process: Running."
-    else:
-        msg = msg + "\nPROBLEM: Server process: Not running."
-    
-    msg = msg + "\n-------- ENDPOINTS -----------"
-
-    now = datetime.datetime.now()
-    for host in config["HOSTS"]:
-        try:
-            with open(config["PATH"]+host+".host", 'r') as a_reader:
-                ts = a_reader.read()
-            dt = datetime.datetime.fromtimestamp(int(ts))
-            interval = (now - dt).total_seconds()
-        except:
-            interval = 'null'
-        if interval == 'null':
-            msg = msg + "\n" + host + " endpoint: never sent a signal."
+    print(message.chat.id)
+    if message.chat.id == config['CHATID']:
+        msg = "-------- PROCESSES -----------"
+        if checkIfProcessRunning("monitora/checker"):
+            msg = msg + "\nChecker process: Running."
         else:
-            msg = msg + "\n" + host + " endpoint: sent a message {} seconds ago.".format(int(interval))
-            
-    #bot.reply_to(message, msg)
-    bot.send_message(message.chat.id, msg)
+            msg = msg + "\nPROBLEM: Checker process: Not running."
+        if checkIfProcessRunning("monitora/server"):
+            msg = msg + "\nServer process: Running."
+        else:
+            msg = msg + "\nPROBLEM: Server process: Not running."
+        
+        msg = msg + "\n-------- ENDPOINTS -----------"
+
+        now = datetime.datetime.now()
+        for host in config["HOSTS"]:
+            try:
+                with open(config["PATH"]+host+".host", 'r') as a_reader:
+                    ts = a_reader.read()
+                dt = datetime.datetime.fromtimestamp(int(ts))
+                interval = (now - dt).total_seconds()
+            except:
+                interval = 'null'
+            if interval == 'null':
+                msg = msg + "\n" + host + " endpoint: never sent a signal."
+            else:
+                msg = msg + "\n" + host + " endpoint: sent a message {} seconds ago.".format(int(interval))
+                
+        #bot.reply_to(message, msg)
+        bot.send_message(message.chat.id, msg)
 
 def main():
     bot.polling()
