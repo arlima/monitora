@@ -2,6 +2,7 @@ import telebot
 import yaml
 import psutil
 import datetime
+import os
     
 config_file = open("/etc/monitora/checker.yml", 'r')
 config = yaml.safe_load(config_file)
@@ -31,6 +32,15 @@ def start(message):
     if message.chat.id == config['CHATID']:
         msg = "Hello !"
         bot.reply_to(message, msg)
+
+@bot.message_handler(commands = ['restart_all'])
+def restart_all(message):
+    if message.chat.id == config['CHATID']:
+        bot.send_message(message.chat.id, "Restarting Services...")
+        os.system("/usr/bin/supervisorctl restart checker")
+        os.system("/usr/bin/supervisorctl restart server")
+        bot.send_message(message.chat.id, "Checker and Server services restarted.")
+
 
 @bot.message_handler(commands = ['status'])
 def status(message):
