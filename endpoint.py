@@ -5,7 +5,7 @@ from requests.auth import HTTPBasicAuth
 import yaml
 
 def main():
-    """main is the main function"""
+    """ main is the main function """
     config_file = open("/etc/monitora/endpoint.yml", 'r', encoding="utf8")
     config = yaml.safe_load(config_file)
 

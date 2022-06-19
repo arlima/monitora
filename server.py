@@ -1,4 +1,4 @@
-"""Server implements an API to receive signals from the endpoints"""
+""" Server implements an API to receive signals from the endpoints """
 from datetime import datetime
 from flask import Flask, request
 from flask_restful import Api
@@ -17,10 +17,7 @@ def verify(username, password):
     """ Verify: Check username and password to allow access to the API"""
     if not (username and password):
         return False
-    if config["USER"] == username and config["PWD"] == password :
-        return True
-    else:
-        return False
+    return config["USER"] == username and config["PWD"] == password
 
 # --- classic api endpoint ---
 @app.route("/signal", methods = ['POST'])

@@ -44,7 +44,6 @@ def restart_all(message):
         os.system("/usr/bin/supervisorctl restart server")
         bot.send_message(message.chat.id, "Checker and Server services restarted.")
 
-
 @bot.message_handler(commands = ['status'])
 def status(message):
     """ Status: sends a message with the status of the services and endpoints"""
@@ -75,7 +74,6 @@ def status(message):
             else:
                 msg = msg + f"\n {host} endpoint: sent a message {int(interval)} seconds ago."
 
-        #bot.reply_to(message, msg)
         bot.send_message(message.chat.id, msg)
 
 def main():
