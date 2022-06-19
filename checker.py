@@ -7,7 +7,6 @@ def main():
     config_file = open("/etc/monitora/checker.yml", 'r')
     config = yaml.safe_load(config_file)
     bot = telebot.TeleBot(config["TOKEN"])
-
     alertTime = {}
 
     while True:
@@ -21,21 +20,27 @@ def main():
                 interval = (now - dt).total_seconds()
             except:
                 interval = 0
-            if interval >= config["INTERVAL_PROBLEM"]:
-                sendMessage = True
-                lastDt = alertTime.get(host, 0)
-                if lastDt != 0:
-                    intervalLastAlert = (now - lastDt).total_seconds()
-                    if intervalLastAlert < config["INTERVAL_RETRY_MESSAGE"]:
-                        sendMessage = False
-                if sendMessage:
-                    alertTime[host] = now
-                    bot.send_message(config["CHATID"], host + " não manda mensagens faz mais de {0} minutos. Possível problema de rede ou na máquina !".format(int(interval/60)))
-            else :
-                lastDt = alertTime.get(host, 0)
-                if lastDt != 0:
-                    alertTime[host] = 0
-                    bot.send_message(config["CHATID"], host + " normalizado.") 
+            
+            lastDt = alertTime.get(host, 0)
+            if lastDt != 0:
+                intervalLastAlert = (now - lastDt).total_seconds()
+            else:
+                intervalLastAlert = 0
+
+            if intervalLastAlert >= config["INTERVAL_RETRY_MESSAGE"]:
+                alertTime[host] = now
+                bot.send_message(config["CHATID"], "RETRY: " + host + " não manda mensagens faz mais de {0} minutos. Possível problema de rede ou na máquina !".format(int(interval/60)))
+                continue
+            
+            if interval >= config["INTERVAL_PROBLEM"] and lastDt == 0:
+                alertTime[host] = now
+                bot.send_message(config["CHATID"], host + " não manda mensagens faz mais de {0} minutos. Possível problema de rede ou na máquina !".format(int(interval/60)))
+                continue
+              
+            if interval < config["INTERVAL_PROBLEM"] and lastDt != 0:
+                alertTime[host] = 0
+                bot.send_message(config["CHATID"], host + " normalizado.")
+                continue
 
 if __name__ == "__main__":
     main()
