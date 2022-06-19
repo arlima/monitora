@@ -13,7 +13,7 @@ def main():
         try:
             auth = HTTPBasicAuth(config["USER"], config["PWD"])
             requests.post(config["SERVER"], data = {'host':config["HOST"]}, auth=auth)
-        except Exception:
+        except requests.exceptions.RequestException:
             print("Server error")
         time.sleep(config["INTERVAL"])
 

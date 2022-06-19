@@ -40,10 +40,9 @@ def restart_all(message):
     """ Restart_all : Restarts all system services """
     if message.chat.id == config['CHATID']:
         bot.send_message(message.chat.id, "Restarting Services...")
-        os.system("/usr/bin/supervisorctl restart checker")
-        os.system("/usr/bin/supervisorctl restart server")
+        os.popen("/usr/bin/supervisorctl restart checker")
+        os.popen("/usr/bin/supervisorctl restart server")
         bot.send_message(message.chat.id, "Checker and Server services restarted.")
-
 
 @bot.message_handler(commands = ['status'])
 def status(message):
