@@ -34,7 +34,6 @@ def start(message):
 
 @bot.message_handler(commands = ['status'])
 def status(message):
-    print(message.chat.id)
     if message.chat.id == config['CHATID']:
         msg = "-------- PROCESSES -----------"
         if checkIfProcessRunning("monitora/checker"):
