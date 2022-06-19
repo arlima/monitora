@@ -29,17 +29,17 @@ def main():
 
             if intervalLastAlert >= config["INTERVAL_RETRY_MESSAGE"]:
                 alertTime[host] = now
-                bot.send_message(config["CHATID"], "RETRY: " + host + " não manda mensagens faz mais de {0} minutos. Possível problema de rede ou na máquina !".format(int(interval/60)))
+                bot.send_message(config["CHATID"], "RETRY: {} não manda mensagens faz mais de {} minutos. Possível problema de rede ou na máquina !".format(host, int(interval/60)))
                 continue
             
             if interval >= config["INTERVAL_PROBLEM"] and lastDt == 0:
                 alertTime[host] = now
-                bot.send_message(config["CHATID"], host + " não manda mensagens faz mais de {0} minutos. Possível problema de rede ou na máquina !".format(int(interval/60)))
+                bot.send_message(config["CHATID"], "{} não manda mensagens faz mais de {} minutos. Possível problema de rede ou na máquina !".format(host, int(interval/60)))
                 continue
               
             if interval < config["INTERVAL_PROBLEM"] and lastDt != 0:
                 alertTime[host] = 0
-                bot.send_message(config["CHATID"], host + " normalizado.")
+                bot.send_message(config["CHATID"], " {} normalizado.".format(host))
                 continue
 
 if __name__ == "__main__":

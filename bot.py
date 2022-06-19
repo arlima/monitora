@@ -7,10 +7,10 @@ config_file = open("/etc/monitora/checker.yml", 'r')
 config = yaml.safe_load(config_file)
 bot = telebot.TeleBot(config["TOKEN"])
 
-#https://thispointer.com/python-check-if-a-process-is-running-by-name-and-find-its-process-id-pid/
+# Inspired by https://thispointer.com/python-check-if-a-process-is-running-by-name-and-find-its-process-id-pid/
 def checkIfProcessRunning(processName):
     '''
-    Check if there is any running process that contains the given name processName.
+    Check if there is any running process that contains the given name command line.
     '''
     #Iterate over the all the running process
     for proc in psutil.process_iter():
@@ -57,7 +57,7 @@ def status(message):
         if interval == 'null':
             msg = msg + "\n" + host + " endpoint: never sent a signal."
         else:
-            msg = msg + "\n" + host + " endpoint: sent a message {0} seconds ago.".format(int(interval))
+            msg = msg + "\n" + host + " endpoint: sent a message {} seconds ago.".format(int(interval))
             
     #bot.reply_to(message, msg)
     bot.send_message(message.chat.id, msg)
