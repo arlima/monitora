@@ -3,7 +3,7 @@ PATH : /home/usuario/monitora/
 # Token para autenticação do bot do Telegram  
 TOKEN : "tokentelegram"
 # ID do grupo do Telegram para enviar as mensagens
-CHATID : -123456789,
+CHATID : -123456789
 # Nomes dos endpoints (hosts) a serem monitorados
 HOSTS :
   - host1
