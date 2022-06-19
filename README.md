@@ -32,7 +32,7 @@ Parte 4: Bot (bot.py)
 
 O que são os arquivos .host
 
-- O sistema de monitoração não usa nenhum banco de dados. Os arquivos .host são criados pelo Servidor de API e lidos pelo Bot. Cada arquivo corresponde a um endpoint e contém o timestamp da última vez que o endpoint se comunicou com o servidor remoto (API).
+- O sistema de monitoração não usa nenhum banco de dados. Os arquivos .host são criados pelo Servidor de API e lidos pelo Checker. Cada arquivo corresponde a um endpoint e contém o timestamp da última vez que o endpoint se comunicou com o servidor remoto (API).
 
 Como testar ?
 
