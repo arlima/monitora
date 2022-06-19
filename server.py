@@ -5,8 +5,8 @@ from flask_restful import Api
 from flask_httpauth import HTTPBasicAuth
 import yaml
 
-config_file = open("/etc/monitora/server.yml", 'r', encoding="utf8")
-config = yaml.safe_load(config_file)
+with open("/etc/monitora/server.yml", 'r', encoding="utf8") as config_file:
+    config = yaml.safe_load(config_file)
 
 app = Flask(__name__)
 api = Api(app)

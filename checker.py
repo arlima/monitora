@@ -9,8 +9,9 @@ import telebot
 
 def main():
     """ main is the main function"""
-    config_file = open("/etc/monitora/checker.yml", 'r', encoding="utf8")
-    config = yaml.safe_load(config_file)
+    with open("/etc/monitora/checker.yml", 'r', encoding="utf8") as config_file:
+        config = yaml.safe_load(config_file)
+
     bot = telebot.TeleBot(config["TOKEN"])
     alert_time = {}
 
