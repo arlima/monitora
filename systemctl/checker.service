@@ -1,0 +1,9 @@
+[Unit]
+Description=Monitora checker service
+After=multi-user.target
+[Service]
+Type=simple
+Restart=always
+ExecStart=/usr/bin/python3 /home/bitnami/monitora/checker.py
+[Install]
+WantedBy=multi-user.target
