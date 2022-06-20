@@ -4,6 +4,6 @@ After=multi-user.target
 [Service]
 Type=simple
 Restart=always
-ExecStart=/usr/bin/python3 /srv/dev-disk-by-uuid-10ab4588-dfb7-420d-9e5e-9842307dbd82/raid/arlima/monitora/endpoint.py
+ExecStart=/usr/bin/python3 /home/user/monitora/endpoint.py
 [Install]
 WantedBy=multi-user.target
