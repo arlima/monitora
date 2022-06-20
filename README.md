@@ -41,8 +41,9 @@ Como testar ?
 - Ative o programa endpoint.py do host novamente e você deve receber uma mensagem dizendo que ele voltou ao normal.
 
 Como executar os arquivos .py ?
-- Eu uso o supervisor para manter os .py rodando. Veja mais detalhes em https://www.digitalocean.com/community/tutorials/how-to-install-and-manage-supervisor-on-ubuntu-and-debian-vps
-- Na pasta supervisor estão os arquivos de configuração que utilizo
+- Eu coloquei todos os arquivos .py como serviços no 
+linux. Mais informações sobre como fazer isso podem ser obtidas no artigo: https://medium.com/codex/setup-a-python-script-as-a-service-through-systemctl-systemd-f0cc55a42267
+- Na pasta systemctl estão os arquivos de configuração que utilizei.
 
 Como obter o TOKEN do telegram ou o ID do grupo para onde enviar as mensagens ?
 - Veja mais informações aqui: https://blog.gabrf.com/posts/HowToBot/
