@@ -1,18 +1,25 @@
-"""Checker is the module that reads the .hosts files and notify via telegram when the endpoints
+"""Checker is the module that reads the .hosts files and notify, via telegram, when the endpoints
 are not sending signals
 """
 
 import time
 import datetime
 import yaml
-import telebot
+import requests
+
+def send_message(token, chatid, message):
+    """ send a message to a telegram group"""
+    try:
+        url = f"https://api.telegram.org/bot{token}/sendMessage?chat_id={chatid}&text={message}"
+        requests.get(url)
+    except requests.exceptions.RequestException:
+        print("Telegram server error!")
 
 def main():
     """ main is the main function"""
     with open("/etc/monitora/checker.yml", 'r', encoding="utf8") as config_file:
         config = yaml.safe_load(config_file)
 
-    bot = telebot.TeleBot(config["TOKEN"])
     alert_time = {}
 
     while True:
@@ -37,19 +44,19 @@ def main():
                 alert_time[host] = now
                 msg = f"RETRY: {host} não manda mensagens faz mais de {int(interval/60)} minutos. "
                 msg = msg + "Possível problema de rede ou na máquina !"
-                bot.send_message(config["CHATID"], msg)
+                send_message(config["TOKEN"], config["CHATID"], msg)
                 continue
 
             if interval >= config["INTERVAL_PROBLEM"] and last_dt == 0:
                 alert_time[host] = now
                 msg = f"{host} não manda mensagens faz mais de {int(interval/60)} minutos. "
                 msg = msg + "Possível problema de rede ou na máquina !"
-                bot.send_message(config["CHATID"], msg)
+                send_message(config["TOKEN"], config["CHATID"], msg)
                 continue
 
             if interval < config["INTERVAL_PROBLEM"] and last_dt != 0:
                 alert_time[host] = 0
-                bot.send_message(config["CHATID"], f" {host} normalizado.")
+                send_message(config["TOKEN"], config["CHATID"], f"{host} normalizado.")
                 continue
 
 if __name__ == "__main__":

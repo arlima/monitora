@@ -2,14 +2,15 @@
 
 import datetime
 import os
-import telebot
 import yaml
 import psutil
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
 with open("/etc/monitora/checker.yml", 'r', encoding="utf8") as config_file:
     config = yaml.safe_load(config_file)
 
-bot = telebot.TeleBot(config["TOKEN"])
+app = ApplicationBuilder().token(config["TOKEN"]).build()
 
 # Inspired by
 # https://thispointer.com/python-check-if-a-process-is-running-by-name-and-find-its-process-id-pid/
@@ -29,26 +30,24 @@ def check_process(process_name):
             pass
     return False
 
-@bot.message_handler(commands = ['start'])
-def start(message):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """ Start: sends a Hello message """
-    if message.chat.id == config['CHATID']:
+    if update.effective_chat.id == config['CHATID']:
         msg = "Hello !"
-        bot.reply_to(message, msg)
+        await context.bot.send_message(update.effective_chat.id, msg)
 
-@bot.message_handler(commands = ['restart_all'])
-def restart_all(message):
+async def restart_all(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """ Restart_all : Restarts all system services """
-    if message.chat.id == config['CHATID']:
-        bot.send_message(message.chat.id, "Restarting Services...")
+    if update.effective_chat.id == config['CHATID']:
+        await context.bot.send_message(update.effective_chat.id, "Restarting Services...")
         os.system("/usr/bin/systemctl restart checker.service")
         os.system("/usr/bin/systemctl restart server.service")
-        bot.send_message(message.chat.id, "Checker and Server services restarted.")
+        await context.bot.send_message(update.effective_chat.id,
+            "Checker and Server services restarted.")
 
-@bot.message_handler(commands = ['status'])
-def status(message):
+async def status(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """ Status: sends a message with the status of the services and endpoints"""
-    if message.chat.id == config['CHATID']:
+    if update.effective_chat.id == config['CHATID']:
         msg = "-------- PROCESSES -----------"
         if check_process("monitora/checker"):
             msg = msg + "\nChecker process: Running."
@@ -75,11 +74,14 @@ def status(message):
             else:
                 msg = msg + f"\n {host} endpoint: sent a message {int(interval)} seconds ago."
 
-        bot.send_message(message.chat.id, msg)
+        await context.bot.send_message(update.effective_chat.id, msg)
 
 def main():
     """ main is the main function"""
-    bot.polling()
+    app.add_handler(CommandHandler('start', start))
+    app.add_handler(CommandHandler('restart_all', restart_all))
+    app.add_handler(CommandHandler('status', status))
+    app.run_polling()
 
 if __name__ == '__main__':
     main()
