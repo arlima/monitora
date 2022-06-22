@@ -1,0 +1,16 @@
+# Caminho onde estão armazenados os arquivos .host
+PATH : /home/usuario/monitora/
+# Token para autenticação do bot do Telegram  
+TOKEN : "tokentelegram"
+# ID do grupo do Telegram para enviar as mensagens
+CHATID : -123456789
+# Nomes dos endpoints (hosts) a serem monitorados
+HOSTS :
+  - host1
+  - host2
+# Intervalo de tempo em segundos que serão verificados os sinais  
+INTERVAL_READ : 60
+# Intervalo de tempo em segundos que será considerado um problema caso não seja recebido um sinal de um endpoint 
+INTERVAL_PROBLEM : 120
+# Intervalo de tempo em segundos entre as mensagens informando problemas
+INTERVAL_RETRY_MESSAGE : 300
