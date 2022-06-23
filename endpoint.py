@@ -4,11 +4,11 @@ import requests
 from requests.auth import HTTPBasicAuth
 import yaml
 
+with open("/etc/monitora/endpoint.yml", 'r', encoding="utf8") as config_file:
+    config = yaml.safe_load(config_file)
+
 def main():
     """ main is the main function """
-    with open("/etc/monitora/endpoint.yml", 'r', encoding="utf8") as config_file:
-        config = yaml.safe_load(config_file)
-
     while True:
         try:
             auth = HTTPBasicAuth(config["USER"], config["PWD"])
