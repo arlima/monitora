@@ -113,6 +113,7 @@ Only messages sent in the group configured in `CHATID` are accepted.
 |---------|-------------|
 | `/status` | Shows the server status and time since the last signal from each endpoint |
 | `/restart` | Restarts the API server process |
+| `/remove_host <hostname>` | Removes a host from monitoring (deletes its `.host` file) |
 
 ## How to get the Telegram TOKEN and CHATID
 
