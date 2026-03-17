@@ -52,7 +52,7 @@ cp monitora.yml.example monitora.yml
 Edit `monitora.yml` with your settings, then start the container:
 
 ```bash
-docker compose up -d
+docker compose up -d --build
 ```
 
 ### Endpoint
@@ -65,7 +65,7 @@ cp endpoint.yml.example endpoint.yml
 Edit `endpoint.yml` with the server address and credentials, then start the container:
 
 ```bash
-docker compose up -d
+docker compose up -d --build
 ```
 
 ## Configuration
