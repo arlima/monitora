@@ -114,6 +114,42 @@ Only messages sent in the group configured in `CHATID` are accepted.
 | `/restart` | Restarts the API server process |
 | `/remove_host <hostname>` | Removes a host from monitoring |
 
+## Changing the default port (8123)
+
+To use a different port, update it in three places:
+
+1. **`server/monitora.yml`** — set `PORT` to the new value:
+   ```yaml
+   PORT: 9000
+   ```
+
+2. **`server/docker-compose.yml`** — update the port mapping to match:
+   ```yaml
+   ports:
+     - "9000:9000"
+   ```
+
+3. **`endpoint/endpoint.yml`** on **each monitored machine** — update the port in the `SERVER` URL:
+   ```yaml
+   SERVER: "http://YOUR_IP:9000/signal"
+   ```
+
+   The endpoint `docker-compose.yml` does not need to be changed — the endpoint only makes outbound HTTP requests to the server and does not expose any port itself.
+
+   After editing `endpoint.yml`, restart the endpoint container on each machine:
+
+   ```bash
+   cd endpoint
+   docker compose up -d --build
+   ```
+
+Then rebuild and restart the server container:
+
+```bash
+cd server
+docker compose up -d --build
+```
+
 ## How to get the Telegram TOKEN and CHATID
 
 See: https://blog.gabrf.com/posts/HowToBot/
