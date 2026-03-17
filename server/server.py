@@ -1,5 +1,6 @@
 """ Server implements an API to receive signals from the endpoints """
 import re
+import sqlite3
 from datetime import datetime
 from flask import Flask, request
 from flask_restful import Api
@@ -8,6 +9,19 @@ import yaml
 
 with open("/etc/monitora/monitora.yml", 'r', encoding="utf8") as config_file:
     config = yaml.safe_load(config_file)
+
+DB_PATH = config["PATH"] + "monitora.db"
+
+def init_db():
+    """ init_db creates the hosts table if it does not exist """
+    with sqlite3.connect(DB_PATH) as con:
+        con.execute("PRAGMA journal_mode=WAL")
+        con.execute("""
+            CREATE TABLE IF NOT EXISTS hosts (
+                name TEXT PRIMARY KEY,
+                last_signal INTEGER NOT NULL
+            )
+        """)
 
 app = Flask(__name__)
 api = Api(app)
@@ -28,18 +42,17 @@ def signal():
     data = request.form
     host = data.get('host')
     if host is None:
-        response = {"message" : "No host"}
-        return response, 400
+        return {"message": "No host"}, 400
 
     if not re.match(r'^[a-zA-Z0-9_\-]+$', host):
         return {"message": "Invalid host name"}, 400
 
     now_ts = int(datetime.now().timestamp())
-    with open(config["PATH"]+host+".host", 'w', encoding="utf8") as a_writer:
-        a_writer.write(f"{now_ts}")
+    with sqlite3.connect(DB_PATH) as con:
+        con.execute("INSERT OR REPLACE INTO hosts (name, last_signal) VALUES (?, ?)", (host, now_ts))
 
-    response = {"message" : "Signal Registered"}
-    return response, 200
+    return {"message": "Signal Registered"}, 200
 
 if __name__ == "__main__":
+    init_db()
     app.run(host='0.0.0.0', port=config["PORT"], debug=False)
