@@ -82,6 +82,21 @@ async def checker(context: CallbackContext):
             await context.bot.send_message(config["CHATID"], msg)
             continue
 
+async def remove_host(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """ remove_host removes a host by deleting its .host file """
+    if update.effective_chat.id == config['CHATID']:
+        if not context.args:
+            await context.bot.send_message(update.effective_chat.id, "Usage: /remove_host <hostname>")
+            return
+        hostname = context.args[0]
+        host_file = config["PATH"] + hostname + ".host"
+        if not os.path.exists(host_file):
+            await context.bot.send_message(update.effective_chat.id, f"Host '{hostname}' not found.")
+            return
+        os.remove(host_file)
+        alert_times.pop(hostname, None)
+        await context.bot.send_message(update.effective_chat.id, f"Host '{hostname}' removed.")
+
 async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """ Restart_all : Restarts all system services """
     if update.effective_chat.id == config['CHATID']:
@@ -118,6 +133,7 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 def main():
     """ main is the main function"""
+    app.add_handler(CommandHandler('remove_host', remove_host))
     app.add_handler(CommandHandler('restart', restart))
     app.add_handler(CommandHandler('status', status))
     job_queue = app.job_queue
