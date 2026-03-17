@@ -53,4 +53,5 @@ def signal():
 
     return {"message": "Signal Registered"}, 200
 
-init_db()
+with app.app_context():
+    init_db()
