@@ -5,6 +5,8 @@ import datetime
 import glob
 import os
 import subprocess
+import sys
+import time
 import yaml
 import psutil
 from telegram import Update
@@ -101,14 +103,16 @@ async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """ Restart_all : Restarts all system services """
     if update.effective_chat.id == config['CHATID']:
         await context.bot.send_message(update.effective_chat.id, "Restarting Server service...")
+        server_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'server.py')
         for proc in psutil.process_iter():
             try:
                 if 'server.py' in ' '.join(proc.cmdline()):
                     proc.kill()
+                    proc.wait(timeout=5)
                     break
-            except (psutil.NoSuchProcess, psutil.AccessDenied):
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.TimeoutExpired):
                 pass
-        subprocess.Popen(['python3', '/app/server.py'])
+        subprocess.Popen([sys.executable, server_path])
         await context.bot.send_message(update.effective_chat.id, "Server service restarted.")
 
 async def status(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

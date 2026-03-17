@@ -1,4 +1,5 @@
 """ Server implements an API to receive signals from the endpoints """
+import re
 from datetime import datetime
 from flask import Flask, request
 from flask_restful import Api
@@ -29,6 +30,9 @@ def signal():
     if host is None:
         response = {"message" : "No host"}
         return response, 400
+
+    if not re.match(r'^[a-zA-Z0-9_\-]+$', host):
+        return {"message": "Invalid host name"}, 400
 
     now_ts = int(datetime.now().timestamp())
     with open(config["PATH"]+host+".host", 'w', encoding="utf8") as a_writer:
