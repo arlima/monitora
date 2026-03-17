@@ -10,6 +10,6 @@ RUN chmod +x start.sh
 
 RUN mkdir -p /app/data
 
-EXPOSE 1234
+EXPOSE 8123
 
 CMD ["./start.sh"]
