@@ -4,3 +4,4 @@ flask-httpauth
 pyyaml
 python-telegram-bot[job-queue]
 psutil
+gunicorn

@@ -5,7 +5,6 @@ import datetime
 import os
 import sqlite3
 import subprocess
-import sys
 import yaml
 import psutil
 from telegram import Update
@@ -111,16 +110,20 @@ async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """ restart restarts the server service """
     if update.effective_chat.id == config['CHATID']:
         await context.bot.send_message(update.effective_chat.id, "Restarting Server service...")
-        server_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'server.py')
         for proc in psutil.process_iter():
             try:
-                if 'server.py' in ' '.join(proc.cmdline()):
+                if 'gunicorn' in ' '.join(proc.cmdline()):
                     proc.kill()
                     proc.wait(timeout=5)
                     break
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.TimeoutExpired):
                 pass
-        subprocess.Popen([sys.executable, server_path])
+        subprocess.Popen([
+            "gunicorn",
+            "--bind", f"0.0.0.0:{config['PORT']}",
+            "--workers", "2",
+            "server:app"
+        ])
         await context.bot.send_message(update.effective_chat.id, "Server service restarted.")
 
 async def status(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
