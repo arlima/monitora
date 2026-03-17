@@ -1,0 +1,11 @@
+# Config files with secrets
+server/monitora.yml
+endpoint/endpoint.yml
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Docker
+server/data/

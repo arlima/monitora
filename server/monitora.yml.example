@@ -1,0 +1,19 @@
+# Directory where .host files will be stored. Do not change.
+PATH : /app/data/
+# API server port
+PORT : 8123
+# Username and password for API authentication
+USER : user
+PWD  : password
+# Telegram bot token
+TOKEN : "tokentelegram"
+# Telegram group ID to send messages to
+CHATID : -123456789
+# Interval in seconds between each endpoint check by the bot
+INTERVAL_CHECKER : 10
+# Interval in seconds to read the signals
+INTERVAL_READ : 60
+# Time in seconds without a signal before considering an endpoint as having a problem
+INTERVAL_PROBLEM : 120
+# Interval in seconds between retry alert messages
+INTERVAL_RETRY_MESSAGE : 300

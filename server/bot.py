@@ -1,14 +1,16 @@
-"""bot implements a telegram bot that allow users to interact with the monitoring system and
-that checks ig the endpoints are sending the signals """
+"""bot implements a telegram bot that allows users to interact with the monitoring system and
+that checks if the endpoints are sending the signals """
 
 import datetime
+import glob
 import os
+import subprocess
 import yaml
 import psutil
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, CallbackContext
 
-with open("/etc/monitora/bot.yml", 'r', encoding="utf8") as config_file:
+with open("/etc/monitora/monitora.yml", 'r', encoding="utf8") as config_file:
     config = yaml.safe_load(config_file)
 
 app = ApplicationBuilder().token(config["TOKEN"]).build()
@@ -33,6 +35,11 @@ def check_process(process_name):
             pass
     return False
 
+def get_hosts():
+    """ get_hosts returns the list of hosts discovered from .host files in the data directory """
+    files = glob.glob(config["PATH"] + "*.host")
+    return [os.path.splitext(os.path.basename(f))[0] for f in files]
+
 def read_interval(host):
     """read_interval reads the last signal timestamp sent by the endpoint named host"""
     try:
@@ -49,7 +56,7 @@ async def checker(context: CallbackContext):
 
     global alert_times
 
-    for host in config["HOSTS"]:
+    for host in get_hosts():
         interval = read_interval(host)
         if interval is None:
             continue
@@ -58,20 +65,20 @@ async def checker(context: CallbackContext):
 
         if interval < config["INTERVAL_PROBLEM"] and times != 0:
             alert_times[host] = 0
-            await context.bot.send_message(config["CHATID"], f"{host} normalizado.")
+            await context.bot.send_message(config["CHATID"], f"{host} is back to normal.")
             continue
 
         if interval >= config["INTERVAL_PROBLEM"] and times == 0:
             alert_times[host] = 1
-            msg = f"{host} não manda mensagens faz mais de {int(interval/60)} minutos. "
-            msg = msg + "Possível problema de rede ou na máquina !"
+            msg = f"{host} has not sent a signal for more than {int(interval/60)} minutes. "
+            msg = msg + "Possible network or machine issue!"
             await context.bot.send_message(config["CHATID"], msg)
             continue
 
         if interval >= config["INTERVAL_RETRY_MESSAGE"]*times and times>=1:
             alert_times[host] = times + 1
-            msg = f"RETRY: {host} não manda mensagens faz mais de {int(interval/60)} minutos. "
-            msg = msg + "Possível problema de rede ou na máquina !"
+            msg = f"RETRY: {host} has not sent a signal for more than {int(interval/60)} minutes. "
+            msg = msg + "Possible network or machine issue!"
             await context.bot.send_message(config["CHATID"], msg)
             continue
 
@@ -79,22 +86,28 @@ async def restart(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """ Restart_all : Restarts all system services """
     if update.effective_chat.id == config['CHATID']:
         await context.bot.send_message(update.effective_chat.id, "Restarting Server service...")
-        os.system("/usr/bin/systemctl restart server.service")
-        await context.bot.send_message(update.effective_chat.id,
-            "Server service restarted.")
+        for proc in psutil.process_iter():
+            try:
+                if 'server.py' in ' '.join(proc.cmdline()):
+                    proc.kill()
+                    break
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                pass
+        subprocess.Popen(['python3', '/app/server.py'])
+        await context.bot.send_message(update.effective_chat.id, "Server service restarted.")
 
 async def status(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """ Status: sends a message with the status of the services and endpoints"""
     if update.effective_chat.id == config['CHATID']:
         msg = "-------- PROCESSES -----------"
-        if check_process("monitora/server"):
+        if check_process("server.py"):
             msg = msg + "\nServer process: Running."
         else:
             msg = msg + "\nPROBLEM: Server process: Not running."
 
         msg = msg + "\n-------- ENDPOINTS -----------"
 
-        for host in config["HOSTS"]:
+        for host in get_hosts():
             interval = read_interval(host)
             if interval is None:
                 msg = msg + "\n" + host + " endpoint: never sent a signal."
@@ -108,7 +121,7 @@ def main():
     app.add_handler(CommandHandler('restart', restart))
     app.add_handler(CommandHandler('status', status))
     job_queue = app.job_queue
-    job_queue.run_repeating(checker, interval=10, first=10)
+    job_queue.run_repeating(checker, interval=config["INTERVAL_CHECKER"], first=config["INTERVAL_CHECKER"])
     app.run_polling()
 
 if __name__ == '__main__':

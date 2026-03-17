@@ -1,44 +1,119 @@
-# Monitora - Sistema simples de monitoração #
+# Monitora
 
-Desenvolvi este sistema para ter uma maneira simples de saber se algumas máquinas de casa estavam conseguindo se comunicar adequadamente com um servidor remoto na AWS. Isto serve para saber se as máquinas estão ativas, se a conexão delas com a internet está ok e até mesmo se a internet de casa está funcionando.
+A simple monitoring system to check if machines are alive and able to communicate with a remote server. When an endpoint stops sending signals, an alert is sent to a Telegram group.
 
-Como instalar e configurar ?
+## Architecture
 
-Parte 1: Endpoint (endpoint.py e endpoint.yml)
+The system is split into two components, each running on its own machine:
 
-- Instalar no dispositivo que você quer monitorar se está conseguindo se comunicar com um servidor remoto (AWS, Azure, etc).
-- O arquivo endpoint.py deve ser instalado na pasta monitora no /home do usuário que vai rodar o programa.
-- O arquivo endpoint.yml deve ser instalado no /etc/monitora/ do servidor que vai rodar o programa. Nele existem várias configurações importantes que precisam ser ajustadas.
-- Rodar o arquivo endpoint.py e mantê-lo ativo.
+- **server** — runs on the remote server (AWS, Azure, etc). Contains the API server that receives signals from endpoints and the Telegram bot that sends alerts.
+- **endpoint** — runs on each machine you want to monitor. Sends periodic signals to the server.
 
-Parte 2: Servidor de API (server.py e server.yml)
+Communication between them is done via HTTP on port `8123`.
 
-- Instalar no servidor remoto (AWS, Azure, etc). No meu caso, está instalado em um servidor lightsail da AWS com serviço de ip fixo e a porta 1234 aberta.
-- O arquivo server.py deve ser instalado na pasta monitora no /home do usuário que vai rodar o programa. Este programa sobe um servidor na porta 1234 que recebe informações dos diversos endpoints.
-- O arquivo server.yml deve ser instalado no /etc/monitora/ do servidor remoto. Nele existem várias configurações importantes que precisam ser ajustadas.
-- Rodar o arquivo server.py e mantê-lo ativo.
+## How it works
 
-Parte 3: Bot (bot.py e bot.yml)
-- Instalar no servidor mesmo servidor remoto que o servidor de API.
-- O arquivo bot.py deve ser instalado na pasta monitora no /home do usuário que vai rodar o programa. Este programa é um bot de telegram com o qual um usuário pode se comunicar. Se o usuário enviar o comando /status para ele, a resposta será o status do server e quando foi a última vez que cada host mandou um sinal.
-- Este programa também verifica se os endpoints estão enviando os sinais periodicamente. Caso não estejam, ele envia uma mensagem para o grupo de telegram configurado
-- O arquivo bot.yml deve ser instalado no /etc/monitora/ do servidor remoto. Nele existem várias configurações importantes que precisam ser ajustadas.
-- Somente comandos enviados no grupo configurado no arquivo bot.yml são respondidos pelo bot.
-- Rodar o arquivo bot.py e mantê-lo ativo.
+1. Each endpoint sends an HTTP POST signal to the server every `INTERVAL` seconds.
+2. The server records the timestamp of the last received signal in a `.host` file per endpoint, inside the `server/data/` folder.
+3. The bot checks every `INTERVAL_CHECKER` seconds if endpoints are sending signals, discovering hosts automatically from existing `.host` files. If an endpoint goes more than `INTERVAL_PROBLEM` seconds without sending a signal, an alert is sent to the Telegram group. When the endpoint recovers, a recovery message is sent.
 
-O que são os arquivos .host
+## Project structure
 
-- O sistema de monitoração não usa nenhum banco de dados. Os arquivos .host são criados pelo Servidor de API e lidos pelo Bot. Cada arquivo corresponde a um endpoint e contém o timestamp da última vez que o endpoint se comunicou com o servidor remoto (API).
+```
+monitora/
+├── server/
+│   ├── Dockerfile
+│   ├── docker-compose.yml
+│   ├── requirements.txt
+│   ├── server.py
+│   ├── bot.py
+│   ├── start.sh
+│   ├── data/                   # .host files — ignored by git
+│   ├── monitora.yml            # ignored by git — create from .example
+│   └── monitora.yml.example
+└── endpoint/
+    ├── Dockerfile
+    ├── docker-compose.yml
+    ├── requirements.txt
+    ├── endpoint.py
+    ├── endpoint.yml            # ignored by git — create from .example
+    └── endpoint.yml.example
+```
 
-Como testar ?
+## Installation
 
-- Pare o programa endpoint.py de um dos hosts que estão sendo monitorados. Você deve receber uma mensagem no grupo de telegram configurado dizendo que ele está com problemas de comunicação.
-- Ative o programa endpoint.py do host novamente e você deve receber uma mensagem dizendo que ele voltou ao normal.
+### Server
 
-Como executar os arquivos .py ?
-- Eu coloquei todos os arquivos .py como serviços no 
-linux. Mais informações sobre como fazer isso podem ser obtidas no artigo: https://medium.com/codex/setup-a-python-script-as-a-service-through-systemctl-systemd-f0cc55a42267
-- Na pasta systemctl estão os arquivos de configuração que utilizei.
+```bash
+cd server
+cp monitora.yml.example monitora.yml
+```
 
-Como obter o TOKEN do telegram ou o ID do grupo para onde enviar as mensagens ?
-- Veja mais informações aqui: https://blog.gabrf.com/posts/HowToBot/
+Edit `monitora.yml` with your settings, then start the container:
+
+```bash
+docker compose up -d
+```
+
+### Endpoint
+
+```bash
+cd endpoint
+cp endpoint.yml.example endpoint.yml
+```
+
+Edit `endpoint.yml` with the server address and credentials, then start the container:
+
+```bash
+docker compose up -d
+```
+
+## Configuration
+
+### monitora.yml
+
+| Key | Description |
+|-----|-------------|
+| `PATH` | Directory where `.host` files will be stored. Do not change. |
+| `PORT` | API server port |
+| `USER` | Username for API authentication |
+| `PWD`  | Password for API authentication |
+| `TOKEN` | Telegram bot token |
+| `CHATID` | Telegram group ID to send messages to |
+| `INTERVAL_CHECKER` | Interval in seconds between each endpoint check by the bot |
+| `INTERVAL_READ` | Interval in seconds to read the signals |
+| `INTERVAL_PROBLEM` | Time in seconds without a signal before considering a problem |
+| `INTERVAL_RETRY_MESSAGE` | Interval in seconds between retry alert messages |
+
+### endpoint.yml
+
+| Key | Description |
+|-----|-------------|
+| `SERVER` | Full server URL, e.g. `http://YOUR_IP:8123/signal` |
+| `HOST` | Endpoint name |
+| `USER` | Username for API authentication |
+| `PWD`  | Password for API authentication |
+| `INTERVAL` | Interval in seconds between signal sends |
+
+## Managing monitored hosts
+
+Hosts are discovered automatically from `.host` files in the `server/data/` folder. No additional configuration is needed to add a new host — the endpoint just needs to start sending signals.
+
+To stop monitoring a host, delete the corresponding file:
+
+```bash
+rm server/data/hostname.host
+```
+
+## Bot commands
+
+Only messages sent in the group configured in `CHATID` are accepted.
+
+| Command | Description |
+|---------|-------------|
+| `/status` | Shows the server status and time since the last signal from each endpoint |
+| `/restart` | Restarts the API server process |
+
+## How to get the Telegram TOKEN and CHATID
+
+See: https://blog.gabrf.com/posts/HowToBot/

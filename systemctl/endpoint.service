@@ -1,9 +1,0 @@
-[Unit]
-Description=Monitora endpoint service
-After=multi-user.target
-[Service]
-Type=simple
-Restart=always
-ExecStart=/usr/bin/python3 /home/user/monitora/endpoint.py
-[Install]
-WantedBy=multi-user.target

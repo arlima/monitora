@@ -1,0 +1,6 @@
+services:
+  endpoint:
+    build: .
+    volumes:
+      - ./endpoint.yml:/etc/monitora/endpoint.yml
+    restart: unless-stopped

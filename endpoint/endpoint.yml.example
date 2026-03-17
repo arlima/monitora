@@ -1,0 +1,10 @@
+# Full URL of the API server. Don't forget /signal at the end and the port :8123
+SERVER : "http://123.123.123.123:8123/signal"
+# Endpoint name
+HOST : host1
+# Username for API authentication
+USER : user
+# Password for API authentication
+PWD  : password
+# Interval in seconds between signal sends
+INTERVAL : 60

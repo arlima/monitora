@@ -1,0 +1,9 @@
+services:
+  server:
+    build: .
+    ports:
+      - "8123:8123"
+    volumes:
+      - ./monitora.yml:/etc/monitora/monitora.yml
+      - ./data:/app/data
+    restart: unless-stopped

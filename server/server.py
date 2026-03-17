@@ -5,7 +5,7 @@ from flask_restful import Api
 from flask_httpauth import HTTPBasicAuth
 import yaml
 
-with open("/etc/monitora/server.yml", 'r', encoding="utf8") as config_file:
+with open("/etc/monitora/monitora.yml", 'r', encoding="utf8") as config_file:
     config = yaml.safe_load(config_file)
 
 app = Flask(__name__)
@@ -38,4 +38,4 @@ def signal():
     return response, 200
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=1234, debug=False)
+    app.run(host='0.0.0.0', port=config["PORT"], debug=False)
