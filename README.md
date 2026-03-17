@@ -123,13 +123,18 @@ To use a different port, update it in three places:
    PORT: 9000
    ```
 
-2. **`server/docker-compose.yml`** — update the port mapping to match:
+2. **`server/Dockerfile`** — update the `EXPOSE` directive:
+   ```dockerfile
+   EXPOSE 9000
+   ```
+
+3. **`server/docker-compose.yml`** — update the port mapping to match:
    ```yaml
    ports:
      - "9000:9000"
    ```
 
-3. **`endpoint/endpoint.yml`** on **each monitored machine** — update the port in the `SERVER` URL:
+4. **`endpoint/endpoint.yml`** on **each monitored machine** — update the port in the `SERVER` URL:
    ```yaml
    SERVER: "http://YOUR_IP:9000/signal"
    ```
