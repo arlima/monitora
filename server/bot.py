@@ -130,7 +130,7 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """ status sends a message with the status of the services and endpoints """
     if update.effective_chat.id == config['CHATID']:
         msg = "-------- PROCESSES -----------"
-        if check_process("server.py"):
+        if check_process("gunicorn"):
             msg = msg + "\nServer process: Running."
         else:
             msg = msg + "\nPROBLEM: Server process: Not running."
