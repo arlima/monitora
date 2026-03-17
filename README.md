@@ -14,8 +14,8 @@ Communication between them is done via HTTP on port `8123`.
 ## How it works
 
 1. Each endpoint sends an HTTP POST signal to the server every `INTERVAL` seconds.
-2. The server records the timestamp of the last received signal in a `.host` file per endpoint, inside the `server/data/` folder.
-3. The bot checks every `INTERVAL_CHECKER` seconds if endpoints are sending signals, discovering hosts automatically from existing `.host` files. If an endpoint goes more than `INTERVAL_PROBLEM` seconds without sending a signal, an alert is sent to the Telegram group. When the endpoint recovers, a recovery message is sent.
+2. The server records the timestamp of the last received signal in a SQLite database (`server/data/monitora.db`).
+3. The bot checks every `INTERVAL_CHECKER` seconds if endpoints are sending signals. If an endpoint goes more than `INTERVAL_PROBLEM` seconds without sending a signal, an alert is sent to the Telegram group. When the endpoint recovers, a recovery message is sent.
 
 ## Project structure
 
@@ -28,7 +28,7 @@ monitora/
 │   ├── server.py
 │   ├── bot.py
 │   ├── start.sh
-│   ├── data/                   # .host files — ignored by git
+│   ├── data/                   # SQLite database — ignored by git
 │   ├── monitora.yml            # ignored by git — create from .example
 │   └── monitora.yml.example
 └── endpoint/
@@ -74,14 +74,13 @@ docker compose up -d
 
 | Key | Description |
 |-----|-------------|
-| `PATH` | Directory where `.host` files will be stored. Do not change. |
+| `PATH` | Directory where the database will be stored. Do not change. |
 | `PORT` | API server port |
 | `USER` | Username for API authentication |
-| `PWD`  | Password for API authentication |
+| `PWD` | Password for API authentication |
 | `TOKEN` | Telegram bot token |
 | `CHATID` | Telegram group ID to send messages to |
 | `INTERVAL_CHECKER` | Interval in seconds between each endpoint check by the bot |
-| `INTERVAL_READ` | Interval in seconds to read the signals |
 | `INTERVAL_PROBLEM` | Time in seconds without a signal before considering a problem |
 | `INTERVAL_RETRY_MESSAGE` | Interval in seconds between retry alert messages |
 
@@ -90,19 +89,19 @@ docker compose up -d
 | Key | Description |
 |-----|-------------|
 | `SERVER` | Full server URL, e.g. `http://YOUR_IP:8123/signal` |
-| `HOST` | Endpoint name |
+| `HOST` | Endpoint name (alphanumeric, `-` and `_` only) |
 | `USER` | Username for API authentication |
-| `PWD`  | Password for API authentication |
+| `PWD` | Password for API authentication |
 | `INTERVAL` | Interval in seconds between signal sends |
 
 ## Managing monitored hosts
 
-Hosts are discovered automatically from `.host` files in the `server/data/` folder. No additional configuration is needed to add a new host — the endpoint just needs to start sending signals.
+Hosts are registered automatically when they first send a signal — no additional configuration needed.
 
-To stop monitoring a host, delete the corresponding file:
+To stop monitoring a host, use the bot command:
 
-```bash
-rm server/data/hostname.host
+```
+/remove_host hostname
 ```
 
 ## Bot commands
@@ -113,7 +112,7 @@ Only messages sent in the group configured in `CHATID` are accepted.
 |---------|-------------|
 | `/status` | Shows the server status and time since the last signal from each endpoint |
 | `/restart` | Restarts the API server process |
-| `/remove_host <hostname>` | Removes a host from monitoring (deletes its `.host` file) |
+| `/remove_host <hostname>` | Removes a host from monitoring |
 
 ## How to get the Telegram TOKEN and CHATID
 

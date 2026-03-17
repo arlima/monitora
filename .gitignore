@@ -7,5 +7,12 @@ __pycache__/
 *.py[cod]
 *.pyo
 
+# Databases
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
 # Docker
 server/data/
